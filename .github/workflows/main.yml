@@ -1,6 +1,6 @@
 on: [push]
 
-# TODO: TripleCheck + DocFX + canary
+# TODO: TripleCheck + DocFX + canary + get Alex & Infracost working
 
 jobs:
   #########
@@ -25,20 +25,20 @@ jobs:
       - name: Test
         run:  npm test
 
-  alex:
-    needs: [build]
-    runs-on: ubuntu-latest
-    name: Alex
-    steps:
-    - name: Semantic linting
-      uses: brown-ccv/alex-recommends@v1.2.1
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        message_id: 'alex'
-        no_binary: false
-        profanity_sureness: 2
-        pr_only: false
-        glob_pattern: "*.md"
+  #alex:
+  #  needs: [build]
+  #  runs-on: ubuntu-latest
+  #  name: Alex
+  #  steps:
+  #  - name: Semantic linting
+  #    uses: brown-ccv/alex-recommends@v1.2.1
+  #    with:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #      message_id: 'alex'
+  #      no_binary: false
+  #      profanity_sureness: 2
+  #      pr_only: false
+  #      glob_pattern: "*.md"
 
   gitleaks:
     needs: [build]
