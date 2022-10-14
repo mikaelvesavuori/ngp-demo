@@ -14,14 +14,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: npm ci
-      - name: Clean
+      - name: Lint
         run: |
           npx eslint './src/**/*.ts' --quiet --fix
           npx prettier ./src --check
       - name: Compile
         run: npx tsc
-          npx sls package
-          npm test
       - name: Package
         run: npx sls package
       - name: Test
