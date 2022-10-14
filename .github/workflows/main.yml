@@ -16,8 +16,8 @@ jobs:
         run: npm ci
       - name: Clean
         run: |
-          npx eslint
-          npx prettier
+          npx eslint './src/**/*.ts' --quiet --fix
+          npx prettier ./src --check
       - name: Compile
         run: npx tsc
           npx sls package
