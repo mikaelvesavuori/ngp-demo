@@ -21,6 +21,7 @@
     "lint": "npx eslint './src/**/*.ts' --quiet --fix && npx prettier ./src --check"
   },
   "devDependencies": {
+    "@ava/typescript": "3",
     "@asyncapi/generator": "1",
     "@mhlabs/cfn-diagram": "1",
     "@types/aws-lambda": "8",
@@ -29,6 +30,7 @@
     "@types/uuid": "8",
     "@typescript-eslint/eslint-plugin": "5",
     "@typescript-eslint/parser": "5",
+    "ava": "4",
     "c8": "7",
     "cloc": "2",
     "eslint": "8",
@@ -51,5 +53,19 @@
   "dependencies": {
     "@aws-sdk/client-eventbridge": "3",
     "node-fetch": "2"
+  },
+  "ava": {
+    "typescript": {
+      "rewritePaths": {
+        "src/": "lib/"
+      },
+      "compile": false
+    },
+    "files": [
+      "tests/**/*.ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
   }
 }
