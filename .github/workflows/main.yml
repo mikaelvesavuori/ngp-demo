@@ -147,7 +147,7 @@ jobs:
   ###########
 
   deploy-test:
-    needs: [build, alex, gitleaks, licenses, spectral, trivy, checkov] # infracost
+    needs: [build, gitleaks, licenses, spectral, trivy, checkov] # alex, infracost
     runs-on: ubuntu-latest
     name: Deploy to test
     steps:
