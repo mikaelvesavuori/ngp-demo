@@ -1,6 +1,6 @@
 on: [push]
 
-# TODO: TripleCheck
+# TODO: TripleCheck + DocFX + canary
 
 jobs:
   #########
@@ -160,13 +160,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run live tests
-        run: echo "Testing on test environment..."
-          #npm run deploy:test
-          #npm run test:integration
-          #npm run test:smoke
-          #npm run test:load
-          #npm run test:canary
-          #npm run teardown:test
+        run: |
+          npm run deploy:test
+          npm run test:smoke
+          npm run test:integration
+          npm run test:load
+          npm run test:canary
+          npm run teardown:test
 
   deploy-prod:
     needs: [live-tests]
