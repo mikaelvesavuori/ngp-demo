@@ -33,11 +33,8 @@ jobs:
     - name: Semantic linting
       uses: brown-ccv/alex-recommends@v1.2.1
       with:
-        message_id: 'alex'
-        no_binary: false
-        profanity_sureness: 2
-        pr_only: false
-        glob_pattern: "services/**"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        glob_pattern: "**/*.md"
 
   gitleaks:
     needs: [build]
@@ -54,9 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     name: License compliance
     steps:
-      - uses: mikaelvesavuori/license-compliance@0.0.1
-        with:
-            pattern: https://mockachino/something/licenses
+      - name: License compliance check
+        uses: mikaelvesavuori/license-compliance-action@v1.0.2
 
   spectral:
     needs: [build]
@@ -101,44 +97,46 @@ jobs:
           soft_fail: true # optional: do not return an error code if there are failed checks
           output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
 
-  infracost:
-    needs: [build]
-    name: Infracost
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    env:
-      TF_ROOT: examples/terraform-project/code
-    steps:
-      - name: Setup Infracost
-        uses: infracost/actions/setup@v2
-        with:
-          api-key: ${{ secrets.INFRACOST_API_KEY }}
-      - name: Checkout base branch
-        uses: actions/checkout@v3
-        with:
-          ref: '${{ github.event.pull_request.base.ref }}'
-      - name: Generate Infracost cost estimate baseline
-        run: |
-          infracost breakdown --path=${TF_ROOT} \
-                              --format=json \
-                              --out-file=/tmp/infracost-base.json
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
-      - name: Generate Infracost diff
-        run: |
-          infracost diff --path=${TF_ROOT} \
-                          --format=json \
-                          --compare-to=/tmp/infracost-base.json \
-                          --out-file=/tmp/infracost.json
-      - name: Post Infracost comment
-        run: |
-            infracost comment github --path=/tmp/infracost.json \
-                                     --repo=$GITHUB_REPOSITORY \
-                                     --github-token=${{github.token}} \
-                                     --pull-request=${{github.event.pull_request.number}} \
-                                     --behavior=update
+  #Error: No INFRACOST_API_KEY environment variable is set.
+  #We run a free Cloud Pricing API, to get an API key run infracost auth login
+  #infracost:
+  #  needs: [build]
+  #  name: Infracost
+  #  runs-on: ubuntu-latest
+  #  permissions:
+  #    contents: read
+  #    pull-requests: write
+  #  env:
+  #    TF_ROOT: examples/terraform-project/code
+  #  steps:
+  #    - name: Setup Infracost
+  #      uses: infracost/actions/setup@v2
+  #      with:
+  #        api-key: ${{ secrets.INFRACOST_API_KEY }}
+  #    - name: Checkout base branch
+  #      uses: actions/checkout@v3
+  #      with:
+  #        ref: '${{ github.event.pull_request.base.ref }}'
+  #    - name: Generate Infracost cost estimate baseline
+  #      run: |
+  #        infracost breakdown --path=${TF_ROOT} \
+  #                            --format=json \
+  #                            --out-file=/tmp/infracost-base.json
+  #    - name: Checkout PR branch
+  #      uses: actions/checkout@v3
+  #    - name: Generate Infracost diff
+  #      run: |
+  #        infracost diff --path=${TF_ROOT} \
+  #                        --format=json \
+  #                        --compare-to=/tmp/infracost-base.json \
+  #                        --out-file=/tmp/infracost.json
+  #    - name: Post Infracost comment
+  #      run: |
+  #          infracost comment github --path=/tmp/infracost.json \
+  #                                   --repo=$GITHUB_REPOSITORY \
+  #                                   --github-token=${{github.token}} \
+  #                                   --pull-request=${{github.event.pull_request.number}} \
+  #                                   --behavior=update
 
   ###########
   # RELEASE #
