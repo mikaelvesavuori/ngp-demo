@@ -1,0 +1,214 @@
+on: [push]
+
+# TODO: TripleCheck
+
+jobs:
+  #########
+  # BUILD #
+  #########
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build, package, and test
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Clean
+        run: |
+          npx eslint
+          npx prettier
+      - name: Compile
+        run: npx tsc
+          npx sls package
+          npm test
+      - name: Package
+        run: npx sls package
+      - name: Test
+        run:  npm test
+
+  alex:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: Alex
+    steps:
+    - name: Semantic linting
+      uses: brown-ccv/alex-recommends@v1.2.1
+      with:
+        message_id: 'alex'
+        no_binary: false
+        profanity_sureness: 2
+        pr_only: false
+        glob_pattern: "services/**"
+
+  gitleaks:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: Gitleaks
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+
+  licenses:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: License compliance
+    steps:
+      - uses: mikaelvesavuori/license-compliance@0.0.1
+        with:
+            pattern: https://mockachino/something/licenses
+
+  spectral:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: Spectral
+    steps:
+      - uses: actions/checkout@v3
+      - run: "printf '{\n  \"extends\": [\"spectral:oas\", \"spectral:asyncapi\"]\n}\n' >.spectral.json"
+      - uses: stoplightio/spectral-action@latest
+        with:
+            file_glob: 'api/*.json'
+
+  trivy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: Trivy vulnerability scanner
+    steps:
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  checkov:
+    needs: [build]
+    name: Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: src/
+          quiet: true # optional: display only failed checks
+          soft_fail: true # optional: do not return an error code if there are failed checks
+          output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
+
+  infracost:
+    needs: [build]
+    name: Infracost
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      TF_ROOT: examples/terraform-project/code
+    steps:
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v2
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+      - name: Checkout base branch
+        uses: actions/checkout@v3
+        with:
+          ref: '${{ github.event.pull_request.base.ref }}'
+      - name: Generate Infracost cost estimate baseline
+        run: |
+          infracost breakdown --path=${TF_ROOT} \
+                              --format=json \
+                              --out-file=/tmp/infracost-base.json
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+      - name: Generate Infracost diff
+        run: |
+          infracost diff --path=${TF_ROOT} \
+                          --format=json \
+                          --compare-to=/tmp/infracost-base.json \
+                          --out-file=/tmp/infracost.json
+      - name: Post Infracost comment
+        run: |
+            infracost comment github --path=/tmp/infracost.json \
+                                     --repo=$GITHUB_REPOSITORY \
+                                     --github-token=${{github.token}} \
+                                     --pull-request=${{github.event.pull_request.number}} \
+                                     --behavior=update
+
+  ###########
+  # RELEASE #
+  ###########
+
+  deploy-test:
+    needs: [build, alex, gitleaks, licenses, spectral, trivy, checkov, infracost]
+    runs-on: ubuntu-latest
+    name: Deploy to test
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to production
+        run: npm run deploy:test
+
+  live-tests:
+    needs: [deploy-test]
+    name: Run live tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run live tests
+        run: echo "Testing on test environment..."
+          #npm run deploy:test
+          #npm run test:integration
+          #npm run test:smoke
+          #npm run test:load
+          #npm run test:canary
+          #npm run teardown:test
+
+  deploy-prod:
+    needs: [live-tests]
+    runs-on: ubuntu-latest
+    name: Deploy to production
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to production
+        run: npm run deploy
+
+  dorametrix:
+    needs: [deploy-prod]
+    runs-on: ubuntu-latest
+    name: Run dorametrix
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: dorametrix
+        uses: mikaelvesavuori/dorametrix-action@v1.0.0
+        with:
+          endpoint: ${{ secrets.DORAMETRIX_ENDPOINT }}
+          api-key: ${{ secrets.DORAMETRIX_API_KEY }}
+
+  ############
+  # DOCUMENT #
+  ############
+
+  docs:
+    needs: [dorametrix]
+    runs-on: ubuntu-latest
+    name: Publish docs
+    steps:
+      - uses: actions/checkout@v3
+      - name: Publish docs
+        uses: mikaelvesavuori/documentarian-action@v0.0.36
+        with:
+          catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
+          catalogist_api_key: ${{ secrets.CATALOGIST_API_KEY }}
+          cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare_project_name: ngp-demo
+          cloudflare_catalog_name: eventcatalog

@@ -1,0 +1,53 @@
+{
+  "name": "next-generation-pipeline-demo",
+  "version": "1.0.0",
+  "description": "Next Generation Pipeline Demo",
+  "main": "src/index.ts",
+  "author": "Mikael Vesavuori",
+  "license": "MIT",
+  "keywords": [],
+  "scripts": {
+    "start": "npx sls offline",
+    "test": "c8 ava",
+    "test:unit": "echo 'Unit testing...'",
+    "test:integration": "echo 'Integration testing...'",
+    "test:smoke": "echo 'Smoke testing...'",
+    "test:load": "echo 'Load testing...'",
+    "test:canary": "echo 'Canary testing...'",
+    "deploy": "echo 'Deploying to production...'",
+    "deploy:test": "echo 'Deploying test stack...'",
+    "teardown:test": "echo 'Removing test stage...'",
+    "teardown:prod": "npx sls remove"
+  },
+  "devDependencies": {
+    "@asyncapi/generator": "1",
+    "@mhlabs/cfn-diagram": "1",
+    "@types/aws-lambda": "8",
+    "@types/node": "latest",
+    "@types/node-fetch": "^2.6.2",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "5",
+    "@typescript-eslint/parser": "5",
+    "cloc": "2",
+    "eslint": "8",
+    "eslint-config-prettier": "8",
+    "eslint-plugin-prettier": "4",
+    "madge": "5",
+    "prettier": "2",
+    "serverless": "3",
+    "serverless-iam-roles-per-function": "3",
+    "serverless-offline": "8",
+    "serverless-webpack": "5",
+    "ts-loader": "latest",
+    "ts-node": "10",
+    "tslib": "latest",
+    "typedoc": "^0.23.5",
+    "typescript": "4",
+    "webpack": "5",
+    "webpack-cli": "latest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.121.0",
+    "node-fetch": "^2.6.7"
+  }
+}
