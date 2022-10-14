@@ -24,6 +24,8 @@
   "channels": {
     "GetUserName": {
       "publish": {
+        "description": "Get user name request",
+        "operationId": "GetUserNamePublish",
         "message": {
           "$ref": "#/components/messages/GetCustomerName"
         },
@@ -35,6 +37,8 @@
         }
       },
       "subscribe": {
+        "description": "Get user name response",
+        "operationId": "GetUserNameSubscribe",
         "message": {
           "oneOf": [
             {
