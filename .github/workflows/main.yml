@@ -100,6 +100,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }} #arn:aws:iam::123456789100:role/my-github-actions-role # TODO
           aws-region: eu-north-1
       - name: Deploy to test
@@ -166,5 +168,5 @@ jobs:
           #catalogist_api_key: ${{ secrets.CATALOGIST_API_KEY }}
           cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare_project_name: ngp-demo
+          cloudflare_project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
           #cloudflare_catalog_name: eventcatalog
