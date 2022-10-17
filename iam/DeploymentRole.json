@@ -1,0 +1,21 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:*",
+        "logs:*",
+        "cloudwatch:*",
+        "kms:*",
+        "lambda:*",
+        "xray:*",
+        "cloudformation:*",
+        "s3:*",
+        "secretsmanager:*",
+        "apigateway:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

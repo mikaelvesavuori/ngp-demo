@@ -1,6 +1,7 @@
 on: [push]
 
 # TODO: TripleCheck + DocFX + canary
+# TODO: Fix permissions
 
 permissions:
   contents: read
@@ -144,26 +145,26 @@ jobs:
       - name: Deploy to production
         run: npm run deploy
 
-  dorametrix:
-    needs: [deploy-prod]
-    runs-on: ubuntu-latest
-    name: Dorametrix
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: dorametrix
-        uses: mikaelvesavuori/dorametrix-action@v1.0.0
-        with:
-          endpoint: ${{ secrets.DORAMETRIX_ENDPOINT }}
-          api-key: ${{ secrets.DORAMETRIX_API_KEY }}
+  #dorametrix:
+  #  needs: [deploy-prod]
+  #  runs-on: ubuntu-latest
+  #  name: Dorametrix
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #      with:
+  #        fetch-depth: 0
+  #    - name: dorametrix
+  #      uses: mikaelvesavuori/dorametrix-action@v1.0.0
+  #      with:
+  #        endpoint: ${{ secrets.DORAMETRIX_ENDPOINT }}
+  #        api-key: ${{ secrets.DORAMETRIX_API_KEY }}
 
   ############
   # DOCUMENT #
   ############
 
   docs:
-    needs: [dorametrix]
+    needs: [deploy-prod] #dorametrix
     runs-on: ubuntu-latest
     name: Publish docs
     steps:
