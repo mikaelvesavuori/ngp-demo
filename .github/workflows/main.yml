@@ -2,6 +2,9 @@ on: [push]
 
 # TODO: TripleCheck + DocFX + canary
 
+permissions:
+  contents: read
+
 jobs:
   #########
   # BUILD #
@@ -94,6 +97,9 @@ jobs:
   deploy-test:
     needs: [build, gitleaks, licenses, spectral, trivy, checkov] # alex, infracost
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     name: Deploy to test
     steps:
       - uses: actions/checkout@v3
@@ -124,6 +130,9 @@ jobs:
   deploy-prod:
     needs: [live-tests]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     name: Deploy to production
     steps:
       - uses: actions/checkout@v3
