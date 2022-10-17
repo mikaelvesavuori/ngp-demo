@@ -1,6 +1,6 @@
 on: [push]
 
-# TODO: TripleCheck + DocFX + canary + get Alex & Infracost working
+# TODO: TripleCheck + DocFX + canary
 
 jobs:
   #########
@@ -25,21 +25,6 @@ jobs:
       - name: Test
         run:  npm test
 
-  #alex:
-  #  needs: [build]
-  #  runs-on: ubuntu-latest
-  #  name: Alex
-  #  steps:
-  #  - name: Semantic linting
-  #    uses: brown-ccv/alex-recommends@v1.2.1
-  #    with:
-  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #      message_id: 'alex'
-  #      no_binary: false
-  #      profanity_sureness: 2
-  #      pr_only: false
-  #      glob_pattern: "*.md"
-
   gitleaks:
     needs: [build]
     runs-on: ubuntu-latest
@@ -55,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     name: License compliance
     steps:
+      - uses: actions/checkout@v3
       - name: License compliance check
         uses: mikaelvesavuori/license-compliance-action@v1.0.2
 
@@ -67,13 +53,14 @@ jobs:
       - run: "printf '{\n  \"extends\": [\"spectral:oas\", \"spectral:asyncapi\"]\n}\n' >.spectral.json"
       - uses: stoplightio/spectral-action@latest
         with:
-            file_glob: 'api/*.json'
+          file_glob: 'api/*.json'
 
   trivy:
     needs: [build]
     runs-on: ubuntu-latest
     name: Trivy vulnerability scanner
     steps:
+      - uses: actions/checkout@v3
       - uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
@@ -90,8 +77,7 @@ jobs:
     name: Checkov
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
@@ -100,47 +86,6 @@ jobs:
           quiet: true # optional: display only failed checks
           soft_fail: true # optional: do not return an error code if there are failed checks
           output_format: sarif # optional: the output format, one of: cli, json, junitxml, github_failed_only, or sarif. Default: sarif
-
-  #Error: No INFRACOST_API_KEY environment variable is set.
-  #We run a free Cloud Pricing API, to get an API key run infracost auth login
-  #infracost:
-  #  needs: [build]
-  #  name: Infracost
-  #  runs-on: ubuntu-latest
-  #  permissions:
-  #    contents: read
-  #    pull-requests: write
-  #  env:
-  #    TF_ROOT: examples/terraform-project/code
-  #  steps:
-  #    - name: Setup Infracost
-  #      uses: infracost/actions/setup@v2
-  #      with:
-  #        api-key: ${{ secrets.INFRACOST_API_KEY }}
-  #    - name: Checkout base branch
-  #      uses: actions/checkout@v3
-  #      with:
-  #        ref: '${{ github.event.pull_request.base.ref }}'
-  #    - name: Generate Infracost cost estimate baseline
-  #      run: |
-  #        infracost breakdown --path=${TF_ROOT} \
-  #                            --format=json \
-  #                            --out-file=/tmp/infracost-base.json
-  #    - name: Checkout PR branch
-  #      uses: actions/checkout@v3
-  #    - name: Generate Infracost diff
-  #      run: |
-  #        infracost diff --path=${TF_ROOT} \
-  #                        --format=json \
-  #                        --compare-to=/tmp/infracost-base.json \
-  #                        --out-file=/tmp/infracost.json
-  #    - name: Post Infracost comment
-  #      run: |
-  #          infracost comment github --path=/tmp/infracost.json \
-  #                                   --repo=$GITHUB_REPOSITORY \
-  #                                   --github-token=${{github.token}} \
-  #                                   --pull-request=${{github.event.pull_request.number}} \
-  #                                   --behavior=update
 
   ###########
   # RELEASE #
@@ -152,7 +97,12 @@ jobs:
     name: Deploy to test
     steps:
       - uses: actions/checkout@v3
-      - name: Deploy to production
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }} #arn:aws:iam::123456789100:role/my-github-actions-role # TODO
+          aws-region: eu-north-1
+      - name: Deploy to test
         run: npm run deploy:test
 
   live-tests:
@@ -176,13 +126,18 @@ jobs:
     name: Deploy to production
     steps:
       - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }} #arn:aws:iam::123456789100:role/my-github-actions-role # TODO
+          aws-region: eu-north-1
       - name: Deploy to production
         run: npm run deploy
 
   dorametrix:
     needs: [deploy-prod]
     runs-on: ubuntu-latest
-    name: Run dorametrix
+    name: Dorametrix
     steps:
       - uses: actions/checkout@v3
         with:
@@ -204,11 +159,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Publish docs
-        uses: mikaelvesavuori/documentarian-action@v0.0.36
+        uses: mikaelvesavuori/documentarian-action@v1.0.0
         with:
-          catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
-          catalogist_api_key: ${{ secrets.CATALOGIST_API_KEY }}
+          schema_path: api/asyncapi.json
+          #catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
+          #catalogist_api_key: ${{ secrets.CATALOGIST_API_KEY }}
           cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           cloudflare_project_name: ngp-demo
-          cloudflare_catalog_name: eventcatalog
+          #cloudflare_catalog_name: eventcatalog
