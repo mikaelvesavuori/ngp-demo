@@ -14,8 +14,8 @@
     "test:integration": "echo 'Integration testing...'",
     "test:load": "echo 'Load testing...'",
     "test:canary": "echo 'Canary testing...'",
-    "deploy": "echo 'Deploying to production...'",
-    "deploy:test": "echo 'Deploying test stack...'",
+    "deploy": "npx sls deploy --stage prod",
+    "deploy:test": "npx sls deploy --stage test",
     "teardown:test": "echo 'Removing test stage...'",
     "teardown:prod": "npx sls remove",
     "lint": "npx eslint './src/**/*.ts' --quiet --fix && npx prettier ./src --check"
