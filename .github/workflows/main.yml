@@ -2,9 +2,6 @@ on: [push]
 
 # TODO: TripleCheck + DocFX + canary
 
-permissions:
-  contents: read
-
 jobs:
   #########
   # BUILD #
@@ -61,6 +58,8 @@ jobs:
   trivy:
     needs: [build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     name: Trivy vulnerability scanner
     steps:
       - uses: actions/checkout@v3
