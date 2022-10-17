@@ -100,10 +100,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }} #arn:aws:iam::123456789100:role/my-github-actions-role # TODO
           aws-region: eu-north-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }}
+          role-session-name: OIDCSession
       - name: Deploy to test
         run: npm run deploy:test
 
@@ -131,8 +130,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }} #arn:aws:iam::123456789100:role/my-github-actions-role # TODO
           aws-region: eu-north-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          role-session-name: OIDCSession
       - name: Deploy to production
         run: npm run deploy
 
