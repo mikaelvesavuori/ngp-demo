@@ -107,6 +107,8 @@ jobs:
           aws-region: eu-north-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }}
           role-session-name: OIDCSession
+      - name: Install dependencies
+        run: npm ci
       - name: Deploy to test
         run: npm run deploy:test
 
@@ -137,6 +139,8 @@ jobs:
           aws-region: eu-north-1
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
           role-session-name: OIDCSession
+      - name: Install dependencies
+        run: npm ci
       - name: Deploy to production
         run: npm run deploy
 
