@@ -8,9 +8,9 @@ permissions:
   id-token: write
 
 jobs:
-  #########
-  # BUILD #
-  #########
+  ##################
+  # BUILD AND TEST #
+  ##################
 
   build:
     runs-on: ubuntu-latest
@@ -31,7 +31,6 @@ jobs:
         run:  npm test
 
   gitleaks:
-    needs: [build]
     runs-on: ubuntu-latest
     name: Gitleaks
     steps:
@@ -41,7 +40,6 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
 
   licenses:
-    needs: [build]
     runs-on: ubuntu-latest
     name: License compliance
     steps:
@@ -50,7 +48,6 @@ jobs:
         uses: mikaelvesavuori/license-compliance-action@v1.0.2
 
   spectral:
-    needs: [build]
     runs-on: ubuntu-latest
     name: Spectral
     steps:
@@ -78,7 +75,6 @@ jobs:
   #        sarif_file: 'trivy-results.sarif'
 
   checkov:
-    needs: [build]
     name: Checkov
     runs-on: ubuntu-latest
     steps:
