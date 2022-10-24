@@ -20,6 +20,13 @@ jobs:
           #cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           #cloudflare_project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
           #cloudflare_catalog_name: eventcatalog
+      - name: 'Check'
+        run: |
+          ls -A
+          cd docs
+          ls -A
+          cd reports
+          ls -A
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v3
         with:
