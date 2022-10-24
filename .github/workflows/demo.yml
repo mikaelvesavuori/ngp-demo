@@ -13,12 +13,12 @@ jobs:
       - name: Publish docs
         uses: mikaelvesavuori/documentarian-action@v1.0.1
         with:
-          schema_path: api/asyncapi.json
+          #schema_path: api/asyncapi.json
           #catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
           #catalogist_api_key: ${{ secrets.CATALOGIST_API_KEY }}
-          cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare_project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          #cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          #cloudflare_auth_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          #cloudflare_project_name: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
           #cloudflare_catalog_name: eventcatalog
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v3
