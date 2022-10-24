@@ -6,7 +6,6 @@ permissions:
 
 jobs:
   docs:
-    needs: [deploy-prod] #dorametrix
     runs-on: ubuntu-latest
     name: Publish docs
     steps:
