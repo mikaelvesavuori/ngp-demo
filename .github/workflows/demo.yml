@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Publish docs
-        uses: mikaelvesavuori/documentarian-action@v1.0.2
+        uses: mikaelvesavuori/documentarian-action@v1.0.3
         with:
           schema_path: api/asyncapi.json
           #catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
