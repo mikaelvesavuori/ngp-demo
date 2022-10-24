@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Publish docs
-        uses: mikaelvesavuori/documentarian-action@v1.0.0
+        uses: mikaelvesavuori/documentarian-action@v1.0.2
         with:
           schema_path: api/asyncapi.json
           #catalogist_endpoint: ${{ secrets.CATALOGIST_ENDPOINT }}
@@ -22,10 +22,14 @@ jobs:
           #cloudflare_catalog_name: eventcatalog
       - name: 'Check'
         run: |
+          echo 'Checking docs...'
           cd docs
+          ls -A
+          echo 'Checking reports...'
+          cd reports
           ls -A
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v3
         with:
           name: SBOM
-          path: docs/syft.txt
+          path: docs/reports/sbom.txt
